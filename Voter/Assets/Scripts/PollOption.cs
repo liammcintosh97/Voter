@@ -11,21 +11,89 @@ public class PollOption : MonoBehaviour{
   public List<Toggle> toggles = new List<Toggle>();
   public InputField optionNameInputField;
 
+  //UI references
+  private Button addOptionsButton;
+  private Button submitButton;
+  private Button resultsButton;
+  private Toggle editToggle;
+
   private int countTotal = 0;
 
    // Start is called before the first frame update
   void Start(){
 
+    if (addOptionsButton.IsActive()) addOptionsButton.interactable = false;
     InitOptionsInputfield();
     ResetToggles();
   }
 
   // Update is called once per frame
   void Update(){
-
+ 
   }
 
+  #region Init Methods
+
+  private void InitOptionsInputfield()
+  {
+
+    optionNameInputField.Select();
+    optionNameInputField.ActivateInputField();
+
+    EventTrigger eventTrigger = optionNameInputField.GetComponent<EventTrigger>();
+
+    EventTrigger.Entry deselectEntry = new EventTrigger.Entry();
+    deselectEntry.eventID = EventTriggerType.Deselect;
+    deselectEntry.callback.AddListener((data) => { OnDeselect(data); });
+
+    optionNameInputField.onEndEdit.AddListener(delegate { OnEndEdit(optionNameInputField); });
+
+    EventTrigger.Entry selectEntry = new EventTrigger.Entry();
+    selectEntry.eventID = EventTriggerType.Select;
+    selectEntry.callback.AddListener((data) => { OnSelect(data); });
+
+    eventTrigger.triggers.Add(deselectEntry);
+    eventTrigger.triggers.Add(selectEntry);
+  }
+
+  public void InitPollOption(Button addB, Button sB, Button rB, Toggle eT) {
+
+    addOptionsButton = addB;
+    submitButton = sB;
+    resultsButton = rB;
+    editToggle = eT;
+
+    Focus(true);
+}
+
+  #endregion
+
   #region Public Methods
+
+  public void Focus(bool focus) {
+
+    if (addOptionsButton.IsActive()) addOptionsButton.interactable = !focus;
+    submitButton.interactable = !focus;
+    resultsButton.interactable = !focus;
+    editToggle.interactable = !focus;
+
+    if (focus)
+    {
+      optionNameInputField.Select();
+      optionNameInputField.ActivateInputField();
+    }
+  }
+
+  public void SetEditbale(bool editable) {
+
+    if (editable)
+    {
+      optionNameInputField.interactable = false;
+    }
+    else {
+      optionNameInputField.interactable = false;
+    }
+  }
 
   public int  ReturnSelection() {
 
@@ -70,19 +138,13 @@ public class PollOption : MonoBehaviour{
     }
   }
 
-  private void InitOptionsInputfield() {
+  #region Delegates
 
-    optionNameInputField.Select();
-    optionNameInputField.ActivateInputField();
-
-    EventTrigger eventTrigger = optionNameInputField.GetComponent<EventTrigger>();
-
-    EventTrigger.Entry toggleEntry = new EventTrigger.Entry();
-    toggleEntry.eventID = EventTriggerType.Deselect;
-    toggleEntry.callback.AddListener((data) => { OnDeselect(data); });
-
-    eventTrigger.triggers.Add(toggleEntry);
+  private void OnEndEdit(InputField input) {
+    OnDeselect(null);
   }
+
+  #endregion
 
   #region Event Triggers
 
@@ -98,14 +160,18 @@ public class PollOption : MonoBehaviour{
 
   private void OnDeselect(BaseEventData data) {
 
-    if (optionNameInputField.text.Equals("") || optionNameInputField.text.Equals(null)){
-      optionNameInputField.Select();
-      optionNameInputField.ActivateInputField();
-    }
+    //The poll options is not complete
+    if (optionNameInputField.text.Equals("") || optionNameInputField.text.Equals(null)) Focus(true);
+    //The poll options is complete
+    else Focus(false);
+ 
+  }
+
+  private void OnSelect(BaseEventData data){
+    Focus(true);
   }
 
   #endregion
 
-  
   #endregion
 }

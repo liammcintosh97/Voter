@@ -1,44 +1,73 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class OptionsManager : MonoBehaviour
 {
-
+  public float optionsPadding;
   public GameObject pollOptionsPrefab;
   public GameObject scrollViewContents;
+
+  [Header("User Inputs")]
   public GameObject addOptionButton;
+  public GameObject submitButton;
+  public GameObject resultsButton;
+  public Toggle editToggle;
 
   private List<GameObject> pollOptions = new List<GameObject>();
 
   // Start is called before the first frame update
   void Start()
   {
-    pollOptions.Add(addOptionButton);
   }
 
   // Update is called once per frame
   void Update()
   {
-
   }
 
   #region Button Methods
 
   public void OnAddOptionClick() {
 
+    //Instatiate the new poll option and place it into the contents and system
     GameObject newPollOption = Instantiate(pollOptionsPrefab, scrollViewContents.transform);
-    RectTransform rect = newPollOption.GetComponent<RectTransform>();
 
-    rect.anchoredPosition3D = new Vector3(10, -10, 0);
+    newPollOption.GetComponent<PollOption>().InitPollOption(addOptionButton.GetComponent<Button>()
+      , submitButton.GetComponent<Button>(), resultsButton.GetComponent<Button>(), editToggle);
+
+    RectTransform rect = newPollOption.GetComponent<RectTransform>();
 
     pollOptions.Add(newPollOption);
 
-    foreach (GameObject po in pollOptions)
-    {
-      RectTransform r = po.GetComponent<RectTransform>();
-      r.anchoredPosition3D = new Vector3(10, r.anchoredPosition3D.y - 40, 0);
+    ShiftAddOptionsToBottom();
+  }
+
+  public void OnEditTogglePress(bool b) {
+
+    bool edit = editToggle.isOn;
+
+    //Enable editing
+    if (edit){
+      addOptionButton.SetActive(true);
+      foreach (GameObject p in pollOptions) p.GetComponent<PollOption>().SetEditbale(true);
     }
+    //Disable Editing
+    else {
+      addOptionButton.SetActive(false);
+      foreach (GameObject p in pollOptions) p.GetComponent<PollOption>().SetEditbale(false);
+    }
+
+  }
+
+  #endregion
+
+  #region Private Methods
+
+  private void ShiftAddOptionsToBottom()
+  {
+    addOptionButton.transform.SetAsLastSibling();
   }
 
   #endregion
